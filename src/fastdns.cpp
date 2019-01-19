@@ -247,7 +247,7 @@ int main(int argc, char **argv) {
 		syslog(LOG_ERR, "Failed to setup signal handler!");
 		return -1;
 	}
-	
+
 	fd_set readfds, errorfds;
 	int maxfd = std::max(lfd, rfd) + 1;
 	timespec last_check = {0,0};
@@ -365,7 +365,7 @@ void init_root() {
 	sockaddr_in addr;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(53);
+	addr.sin_port = htons(443);
 	for (size_t i = 0; i < custom_root.size(); i++) {
 		if (inet_aton(custom_root[i].c_str(), &addr.sin_addr) == 0) continue;
 		root_addrs.addrs.insert(std::make_pair(addr, 0));
@@ -479,7 +479,7 @@ void handle_response(ns_msg& handle, const sockaddr_in& addr) {
 	request_entry& request = request_map[question];
 	if (request.ns.addrs.count(addr) == 0) return;
 	if (id != request.ns.addrs[addr]) return;
-	
+
 	if (verbose >= 3) syslog(LOG_DEBUG, "Received response %d for question %s, %d, %d from %s", request.progress, question.qname.c_str(), question.qclass, question.qtype, remote_addr);
 	// first add the answer to cache
 	bool no_answer = true;
@@ -513,7 +513,7 @@ void handle_response(ns_msg& handle, const sockaddr_in& addr) {
 	}
 	bool no_more_data = no_soa == false || (no_ns && no_answer);
 	bool no_domain = rcode == NXDOMAIN;
-	
+
 	for (std::map<question_entry, cache_entry>::iterator it = entries.begin(); it != entries.end(); ++it) {
 		// find the least expiry time;
 		cache_entry& tmp_cache = it->second;
@@ -541,7 +541,7 @@ void handle_response(ns_msg& handle, const sockaddr_in& addr) {
 		cache_expiry_map[tmp_cache.least_expiry].insert(&cache_map[tmp_cache.question]);
 		if (cache_map.size() > ss.cache_max) ss.cache_max = cache_map.size();
 	}
-	
+
 	// try complete request
 	assert(request.nq.qclass == request.question.qclass);
 	assert(request.nq.qtype == request.question.qtype);
@@ -694,7 +694,7 @@ void find_nameserver(const question_entry& question, ns_list& ns, std::set<std::
 	testa.qtype = T_A;
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(53);
+	addr.sin_port = htons(443);
 	while (ns.addrs.size() == 0 && ns_with_no_addr.size() == 0) {
 		assert(pstr);
 		testns.qname = ns.scope = pstr;
